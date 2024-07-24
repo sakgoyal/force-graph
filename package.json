@@ -1,5 +1,5 @@
 {
-  "name": "force-graph",
+  "name": "force-graph-2",
   "version": "2.0.0",
   "description": "2D force-directed graph rendered on HTML5 canvas",
   "type": "module",
