@@ -1,16 +1,16 @@
 {
   "name": "force-graph-2",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "2D force-directed graph rendered on HTML5 canvas",
   "type": "module",
-  "unpkg": "dist/force-graph.umd.cjs",
-  "main": "dist/force-graph.js",
-  "module": "dist/force-graph.js",
+  "unpkg": "dist/index.umd.cjs",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "src/index.d.ts",
   "exports": {
-    "types": "./dist/force-graph.d.ts",
-    "umd": "./dist/force-graph.umd.cjs",
-    "default": "./dist/force-graph.js"
+    "types": "./dist/index.d.ts",
+    "umd": "./dist/index.umd.cjs",
+    "default": "./dist/index.js"
   },
   "sideEffects": [
     "./src/*.css"
