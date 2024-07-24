@@ -8,8 +8,8 @@ import {
 
 import { Bezier } from 'bezier-js';
 
-import Kapsule from 'kapsule';
-import accessorFn from 'accessor-fn';
+import { Kapsule } from 'kapsule-2';
+import { accessorFn } from 'accessor-fn-2';
 import indexBy from 'index-array-by';
 
 import { autoColorObjects } from './color-utils';

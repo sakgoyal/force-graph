@@ -4,9 +4,9 @@ import { drag as d3Drag } from 'd3-drag';
 import { max as d3Max, min as d3Min } from 'd3-array';
 import { throttle } from 'lodash-es';
 import * as TWEEN from '@tweenjs/tween.js';
-import Kapsule from 'kapsule';
-import accessorFn from 'accessor-fn';
-import ColorTracker from 'canvas-color-tracker';
+import { Kapsule } from 'kapsule-2';
+import { accessorFn } from 'accessor-fn-2';
+import { ColorTracker } from 'canvas-color-tracker-2';
 
 import CanvasForceGraph from './canvas-force-graph';
 import { linkKapsule } from './kapsule-link';
@@ -15,56 +15,54 @@ const HOVER_CANVAS_THROTTLE_DELAY = 800; // ms to throttle shadow canvas updates
 const ZOOM2NODES_FACTOR = 4;
 
 // Expose config from forceGraph
-const bindFG = linkKapsule('forceGraph', CanvasForceGraph);
+const bindFG = linkKapsule(['forceGraph'], CanvasForceGraph);
 const bindBoth = linkKapsule(['forceGraph', 'shadowGraph'], CanvasForceGraph);
-const linkedProps = Object.assign(
-  ...[
-    'nodeColor',
-    'nodeAutoColorBy',
-    'nodeCanvasObject',
-    'nodeCanvasObjectMode',
-    'linkColor',
-    'linkAutoColorBy',
-    'linkLineDash',
-    'linkWidth',
-    'linkCanvasObject',
-    'linkCanvasObjectMode',
-    'linkDirectionalArrowLength',
-    'linkDirectionalArrowColor',
-    'linkDirectionalArrowRelPos',
-    'linkDirectionalParticles',
-    'linkDirectionalParticleSpeed',
-    'linkDirectionalParticleWidth',
-    'linkDirectionalParticleColor',
-    'dagMode',
-    'dagLevelDistance',
-    'dagNodeFilter',
-    'onDagError',
-    'd3AlphaMin',
-    'd3AlphaDecay',
-    'd3VelocityDecay',
-    'warmupTicks',
-    'cooldownTicks',
-    'cooldownTime',
-    'onEngineTick',
-    'onEngineStop'
-  ].map(p => ({ [p]: bindFG.linkProp(p)})),
-  ...[
-    'nodeRelSize',
-    'nodeId',
-    'nodeVal',
-    'nodeVisibility',
-    'linkSource',
-    'linkTarget',
-    'linkVisibility',
-    'linkCurvature'
-  ].map(p => ({ [p]: bindBoth.linkProp(p)}))
-);
-const linkedMethods = Object.assign(...[
-  'd3Force',
-  'd3ReheatSimulation',
-  'emitParticle'
-].map(p => ({ [p]: bindFG.linkMethod(p)})));
+const linkedProps = {
+  nodeColor                    : bindFG.linkProp('nodeColor'),
+  nodeAutoColorBy              : bindFG.linkProp('nodeAutoColorBy'),
+  nodeCanvasObject             : bindFG.linkProp('nodeCanvasObject'),
+  nodeCanvasObjectMode         : bindFG.linkProp('nodeCanvasObjectMode'),
+  linkColor                    : bindFG.linkProp('linkColor'),
+  linkAutoColorBy              : bindFG.linkProp('linkAutoColorBy'),
+  linkLineDash                 : bindFG.linkProp('linkLineDash'),
+  linkWidth                    : bindFG.linkProp('linkWidth'),
+  linkCanvasObject             : bindFG.linkProp('linkCanvasObject'),
+  linkCanvasObjectMode         : bindFG.linkProp('linkCanvasObjectMode'),
+  linkDirectionalArrowLength   : bindFG.linkProp('linkDirectionalArrowLength'),
+  linkDirectionalArrowColor    : bindFG.linkProp('linkDirectionalArrowColor'),
+  linkDirectionalArrowRelPos   : bindFG.linkProp('linkDirectionalArrowRelPos'),
+  linkDirectionalParticles     : bindFG.linkProp('linkDirectionalParticles'),
+  linkDirectionalParticleSpeed : bindFG.linkProp('linkDirectionalParticleSpeed'),
+  linkDirectionalParticleWidth : bindFG.linkProp('linkDirectionalParticleWidth'),
+  linkDirectionalParticleColor : bindFG.linkProp('linkDirectionalParticleColor'),
+  dagMode                      : bindFG.linkProp('dagMode'),
+  dagLevelDistance             : bindFG.linkProp('dagLevelDistance'),
+  dagNodeFilter                : bindFG.linkProp('dagNodeFilter'),
+  onDagError                   : bindFG.linkProp('onDagError'),
+  d3AlphaMin                   : bindFG.linkProp('d3AlphaMin'),
+  d3AlphaDecay                 : bindFG.linkProp('d3AlphaDecay'),
+  d3VelocityDecay              : bindFG.linkProp('d3VelocityDecay'),
+  warmupTicks                  : bindFG.linkProp('warmupTicks'),
+  cooldownTicks                : bindFG.linkProp('cooldownTicks'),
+  cooldownTime                 : bindFG.linkProp('cooldownTime'),
+  onEngineTick                 : bindFG.linkProp('onEngineTick'),
+  onEngineStop                 : bindFG.linkProp('onEngineStop'),
+  ///
+  nodeRelSize    : bindBoth.linkProp('nodeRelSize'),
+  nodeId         : bindBoth.linkProp('nodeId'),
+  nodeVal        : bindBoth.linkProp('nodeVal'),
+  nodeVisibility : bindBoth.linkProp('nodeVisibility'),
+  linkSource     : bindBoth.linkProp('linkSource'),
+  linkTarget     : bindBoth.linkProp('linkTarget'),
+  linkVisibility : bindBoth.linkProp('linkVisibility'),
+  linkCurvature  : bindBoth.linkProp('linkCurvature'),
+};
+
+const linkedMethods = {
+  d3Force            : bindFG.linkMethod('d3Force'),
+  d3ReheatSimulation : bindFG.linkMethod('d3ReheatSimulation'),
+  emitParticle       : bindFG.linkMethod('emitParticle'),
+};
 
 function adjustCanvasSize(state) {
   if (state.canvas) {
@@ -291,20 +289,23 @@ export default Kapsule({
       const getVal = accessorFn(state.nodeVal);
       const getR = node => Math.sqrt(Math.max(0, getVal(node) || 1)) * state.nodeRelSize;
 
-      const nodesPos = state.graphData.nodes.filter(nodeFilter).map(node => ({
+      const nodesPos : {x : number, y : number, r : number}[] = state.graphData.nodes.filter(nodeFilter).map(node => ({
         x: node.x,
         y: node.y,
         r: getR(node)
       }));
 
-      return !nodesPos.length ? null : {
+      if (!nodesPos.length)
+        return null;
+
+      return {
         x: [
-          d3Min(nodesPos, node => node.x - node.r),
-          d3Max(nodesPos, node => node.x + node.r)
+          d3Min(nodesPos, ({x, r}) => x - r),
+          d3Max(nodesPos, ({x, r}) => x + r)
         ],
         y: [
-          d3Min(nodesPos, node => node.y - node.r),
-          d3Max(nodesPos, node => node.y + node.r)
+          d3Min(nodesPos, ({y, r}) => y - r),
+          d3Max(nodesPos, ({y, r}) => y + r)
         ]
       };
     },
@@ -331,8 +332,8 @@ export default Kapsule({
   stateInit: () => ({
     lastSetZoom: 1,
     zoom: d3Zoom(),
-    forceGraph: new CanvasForceGraph(),
-    shadowGraph: new CanvasForceGraph()
+    forceGraph: CanvasForceGraph(),
+    shadowGraph: CanvasForceGraph()
       .cooldownTicks(0)
       .nodeColor('__indexColor')
       .linkColor('__indexColor')

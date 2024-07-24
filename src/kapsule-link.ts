@@ -1,6 +1,6 @@
-export function linkKapsule(kapsulePropNames : string | string[], kapsuleType) {
+export function linkKapsule(kapsulePropNames : string[], kapsuleType) {
 
-  const propNames = Array.isArray(kapsulePropNames) ? kapsulePropNames : [kapsulePropNames];
+  const propNames = kapsulePropNames;
 
   const dummyK = new kapsuleType(); // To extract defaults
   dummyK._destructor && dummyK._destructor();
